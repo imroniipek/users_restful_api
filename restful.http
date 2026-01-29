@@ -1,0 +1,34 @@
+@baseUrl = http://localhost:3000
+
+###
+GET {{baseUrl}}/
+
+###
+GET {{baseUrl}}/selam
+
+###
+GET {{baseUrl}}/api/users
+
+###
+GET {{baseUrl}}/api/users/profil
+
+###
+POST {{baseUrl}}/kaydet
+Content-Type: application/json
+
+{
+  "isim": "Roni İpek",
+  "proje": "Cüzdanım360",
+  "not": "Backend harika gidiyor!"
+}
+
+###
+POST {{baseUrl}}/api/users/ekle
+Content-type: application/json
+
+{
+
+ "isim":"Alvin",
+ "userName":"Alvin2134",
+ "sifre":"123456"
+}
