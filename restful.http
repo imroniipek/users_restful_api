@@ -17,14 +17,14 @@ Content-type: application/json
 }
 
 ###
-DELETE {{baseUrl}}/api/users/697b9baea28125dcf7ba80e5
+DELETE {{baseUrl}}/api/users/697f4c8d856fd1809513dfba
 Content-type: application/json
 ###
-PATCH {{baseUrl}}/api/users/697cc19c9e836f7c71e299b3
-Content-type: application/json
+PATCH {{baseUrl}}/api/users/697f908de89f1cb5da2bcddc
 
+Content-type: application/json
 {
- "isim": "Mehmet",
- "userName": "mehmet5156"
+ "isim":"Roni İpek",
+ "userName":"roniipek2134"
 }
 
