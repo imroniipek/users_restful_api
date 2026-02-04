@@ -1,8 +1,6 @@
 @baseUrl = http://localhost:3000
-
 ###
 GET {{baseUrl}}/
-
 ###
 GET {{baseUrl}}/api/users
 
@@ -11,20 +9,28 @@ POST {{baseUrl}}/api/users/ekle
 Content-type: application/json
 
 {
- "isim":"Alvin",
- "userName":"Alvin2134",
- "sifre":"123456"
+ "isim":"Mehmet",
+ "userName":"Mehmet12345",
+ "sifre":"7891011"
 }
 
 ###
-DELETE {{baseUrl}}/api/users/697f4c8d856fd1809513dfba
+DELETE {{baseUrl}}/api/users/6980b71bc8a563014427ceb1
 Content-type: application/json
 ###
-PATCH {{baseUrl}}/api/users/697f908de89f1cb5da2bcddc
+PATCH {{baseUrl}}/api/users/69835272e3d669c30f26de85
 
-Content-type: application/json
+Content-Type: application/json
 {
- "isim":"Roni İpek",
- "userName":"roniipek2134"
+ "isim":"Roni",
+ "userName":"roniipek2134",
+ "sifre":2134567,
 }
+###
+POST {{baseUrl}}/api/users/sifrekontrol
+Content-Type:application/json
 
+{
+  "id":"69835272e3d669c30f26de85",
+  "sifre":"7891011"
+}

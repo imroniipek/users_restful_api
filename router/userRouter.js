@@ -1,14 +1,17 @@
-const router = require('express').Router();
+const express = require('express')
+const router=express.Router();
+const bcrypt=require("bcrypt");
 const userDb = require("../models/userModel");
 var createEror=require("http-errors");
 
 router.get('/', async (req, res, next) => {
   const usersFromDb = await userDb.find({});
-  if (usersFromDb.length === 0) {
+  if (usersFromDb.length === 0) 
+    {
     const err = new Error("Veritabanında hiç veri yok");
     err.statusCode = 404;
     return next(err);
-  }
+   }
   res.status(200).json(usersFromDb);
 });
 router.post('/ekle', async (req, res, next) => {
@@ -19,12 +22,15 @@ router.post('/ekle', async (req, res, next) => {
     return next(error);
   }
   try {
+
+   const hashedPassword=await bcrypt.hash(value.sifre,8);
+   value.sifre=hashedPassword;
    
     const yeniKullanici = await userDb.create(value); 
     
     res.status(201).json({
       mesaj: "Veri başarıyla kaydedildi",
-      alinanVeri: yeniKullanici
+      alinanVeri: yeniKullanici.toJSON()
     });
   } catch (err) 
   {
@@ -55,39 +61,27 @@ router.delete('/:id',async (req,res,next)=>{
         next(error);
     }
 });
-
-router.patch('/:id', async (req, res, next) => {
-  /*const allowedFields = ["isim", "userName"];
-  const updates = {};
-
-  for (const key in req.body) {
-    if (!allowedFields.includes(key)) 
-      {
-      const err = new Error(`${key} alanı güncellenemez`);
-      err.statusCode = 400;
-      return next(err);
-    }
-    updates[key] = req.body[key];
-  }
-
-  if (updates.length === 0) 
-    {
-    const err = new Error("Güncellenecek geçerli alan bulunamadı");
-    err.statusCode = 400;
-    return next(err);
-  }
-*/
-  const { error, value } = userDb.validateForUpdate(updates);
-  if (error) {
-    error.statusCode = 400;
-    return next(error);
-  }
-
+    
+router.patch("/:id", async (req, res, next) => {
   try {
+    if (!req.body || Object.keys(req.body).length === 0) {
+       const err = new Error("Güncellenecek veri gönderilmedi");
+       err.statusCode = 400;
+       return next(err);
+    }
+
+    // Şifre varsa hashle
+    if (req.body.sifre) {
+      req.body.sifre = await bcrypt.hash(req.body.sifre, 8);
+    }
+
     const guncelKullanici = await userDb.findByIdAndUpdate(
       req.params.id,
-      value,
-      { new: true, runValidators: true }
+      req.body,
+      {
+        new: true,
+        runValidators: true,
+      }
     );
 
     if (!guncelKullanici) {
@@ -96,10 +90,58 @@ router.patch('/:id', async (req, res, next) => {
       return next(err);
     }
 
-    res.status(200).json(guncelKullanici);
+    res.status(200).json({
+      mesaj: "Kullanıcı Güncellenmiştir",
+      guncelKullanici,
+    });
   } catch (err) {
     next(err);
   }
 });
+router.post('/sifrekontrol', async (req, res, next) => {
+    const { id, sifre } = req.body;
 
+    try {
+        const user = await userDb.findById(id);
+
+        if (!user) {
+            const error = new Error("Kullanıcı Bulunamadı");
+            error.statusCode = 404;
+            return next(error);
+        }
+        const sifreDogruMu = await bcrypt.compare(sifre, user.sifre);
+
+        if (sifreDogruMu) {
+            return res.status(200).json({
+                mesaj: "Kullanıcı Doğrulandı",
+                user: user.toJSON() 
+            });
+        } else {
+            const girisError = new Error("Kullanıcı Veya Sifre Hatalidir");
+            girisError.statusCode = 401;
+            return next(girisError);
+        }
+
+    } catch (error) {
+        next(error);
+    }
+});
+async function girisVarMi(userId) 
+{
+    try {
+        const user = await userDb.findById(userId);
+        return user ? user.sifre : null;
+    } 
+    catch (error) 
+    {
+        return null; 
+    }
+}
+
+async function hashThePassword(userPassword) {
+   
+    const salt = await bcrypt.genSalt(8);
+    const newPassword = await bcrypt.hash(userPassword, salt);
+    return newPassword;
+}
 module.exports = router;
