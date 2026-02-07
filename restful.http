@@ -4,6 +4,12 @@ GET {{baseUrl}}/
 ###
 GET {{baseUrl}}/api/users
 
+@token =eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OTgzNTI3MmUzZDY2OWMzMGYyNmRlODUiLCJpc2ltIjoiUm9uaSIsInVzZXJOYW1lIjoicm9uaWlwZWsyMTM0IiwiaWF0IjoxNzcwNDY0MjE2LCJleHAiOjE3NzA0Njc4MTZ9.wV3HL1dnetctWHAnRklYHqU-KFeOAKwHR7eBuwM8LG4
+
+###
+GET {{baseUrl}}/api/users/me
+Authorization: Bearer {{token}}
+
 ###
 POST {{baseUrl}}/api/users/ekle
 Content-type: application/json
@@ -19,13 +25,25 @@ DELETE {{baseUrl}}/api/users/6980b71bc8a563014427ceb1
 Content-type: application/json
 ###
 PATCH {{baseUrl}}/api/users/69835272e3d669c30f26de85
-
 Content-Type: application/json
+
 {
  "isim":"Roni",
  "userName":"roniipek2134",
- "sifre":2134567,
+ "sifre":"2134567"
 }
+
+###
+PATCH {{baseUrl}}/api/users/guncelle
+Authorization: Bearer {{token}}
+
+{
+  "userName":"mehmet5156",
+  "isim":"Mehmet",
+  "şifre":"5642"
+}
+
+
 ###
 POST {{baseUrl}}/api/users/sifrekontrol
 Content-Type:application/json
@@ -33,4 +51,12 @@ Content-Type:application/json
 {
   "id":"69835272e3d669c30f26de85",
   "sifre":"7891011"
+}
+###
+POST {{baseUrl}}/api/users/giris
+Content-Type:application/json
+
+{
+  "userName":"roniipek2134",
+  "sifre":"2134567"
 }

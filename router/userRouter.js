@@ -2,7 +2,9 @@ const express = require('express')
 const router=express.Router();
 const bcrypt=require("bcrypt");
 const userDb = require("../models/userModel");
+const authMiddleWare = require("../middleware/authmiddleware");
 var createEror=require("http-errors");
+const User = require('../models/userModel');
 
 router.get('/', async (req, res, next) => {
   const usersFromDb = await userDb.find({});
@@ -14,6 +16,47 @@ router.get('/', async (req, res, next) => {
    }
   res.status(200).json(usersFromDb);
 });
+router.get('/me',authMiddleWare,(req,res,next) =>
+{
+
+  res.json({
+    "Bulunan Kullanıcı":req.user
+  }
+  );
+
+});
+
+
+router.patch('/guncelle',authMiddleWare, async(req,res,next)=>
+{
+  try
+  {
+     req.user.sifre=await hashThePassword(req.body.sifre);
+
+     const result=await userDb.findByIdAndUpdate(
+      req.user._id,
+      req.body,
+      {
+      new: true,
+      runValidators: true,
+      }
+     );
+     if(!result)
+     {
+      next(error);
+     }
+
+      res.status(200).json({
+      mesaj: "Bilgiler güncellendi",
+      user: result.toJSON(),
+    });
+  }
+  catch(error)
+  {
+    next(error);
+  }
+});
+
 router.post('/ekle', async (req, res, next) => {
   const { error, value } = userDb.validateValues(req.body);
   if (error) 
@@ -64,16 +107,11 @@ router.delete('/:id',async (req,res,next)=>{
     
 router.patch("/:id", async (req, res, next) => {
   try {
-    if (!req.body || Object.keys(req.body).length === 0) {
-       const err = new Error("Güncellenecek veri gönderilmedi");
-       err.statusCode = 400;
-       return next(err);
-    }
 
-    // Şifre varsa hashle
-    if (req.body.sifre) {
+    if (req.body.sifre) 
+      {
       req.body.sifre = await bcrypt.hash(req.body.sifre, 8);
-    }
+     }
 
     const guncelKullanici = await userDb.findByIdAndUpdate(
       req.params.id,
@@ -111,20 +149,38 @@ router.post('/sifrekontrol', async (req, res, next) => {
         }
         const sifreDogruMu = await bcrypt.compare(sifre, user.sifre);
 
-        if (sifreDogruMu) {
+        if (sifreDogruMu) 
+          {
             return res.status(200).json({
                 mesaj: "Kullanıcı Doğrulandı",
                 user: user.toJSON() 
             });
-        } else {
+          } 
+          else 
+            {
             const girisError = new Error("Kullanıcı Veya Sifre Hatalidir");
             girisError.statusCode = 401;
             return next(girisError);
-        }
+           }
 
     } catch (error) {
         next(error);
     }
+});
+
+router.post('/giris', async (req, res, next) => {
+  try {
+    
+    const user = await userDb.GirisYap(req.body.userName, req.body.sifre);
+    const token = user.generateToken(); 
+
+    res.status(200).json({
+      "user": user, 
+      "token": token
+    });
+  } catch (error) {
+    next(error);
+  }
 });
 async function girisVarMi(userId) 
 {
